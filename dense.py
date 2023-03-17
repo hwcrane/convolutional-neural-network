@@ -1,38 +1,33 @@
 import numpy as np
-from typing import List
 from layers import Layer
 
-
 class Dense(Layer):
-    def __init__(self, size: int) -> None:
-        super().__init__()
-        self.output_shape: List[int] = [-1, size]
-        self.weights = np.array([])
-        self.biases = np.array([])
-        self.output = np.array([])
+    def __init__(self, input_size: int, output_size: int) -> None:
+        self.input_size = input_size
+        self.output_size = output_size
 
-    def compile(self, input_shape: List[int]):
-        self.initalised = True
-        self.weights = np.random.normal(
-            0, 1, size=[input_shape[1], self.output_shape[1]]
-        )
-        self.biases = np.random.normal(0, 1, size=[1, self.output_shape[1]])
+        # Uses Xavier initialization for the weights
+        fan_in = input_size
+        fan_out = output_size
+        limit = np.sqrt(6 / (fan_in + fan_out))
+        self.weights = np.random.uniform(-limit, limit, size=[input_size, output_size])
+
+        # Initialize biases to zero
+        self.biases = np.zeros((1, output_size))
 
     def forward(self, input: np.ndarray) -> np.ndarray:
         self.input = input
-        ones = np.ones(input.shape[0]).reshape(-1, 1)
-        self.output = self.input @ self.weights + ones @ self.biases
-        return self.output
+        return np.dot(self.input, self.weights) + self.biases
 
     def backward(self, derivatives: np.ndarray, learning_rate) -> np.ndarray:
+        # Compute the gradients with respect to the weights, inputs, and biases
         dW = np.dot(self.input.T, derivatives)
         dX = np.dot(derivatives, self.weights.T)
-        dB = np.sum(derivatives, axis=0).reshape(1, -1)
+        dB = np.sum(derivatives, axis=0, keepdims=True)
 
-        self.weights -= dW * learning_rate
-        self.biases -= dB * learning_rate
+        # Update the weights and biases using gradient descent
+        self.weights -= learning_rate * dW
+        self.biases -= learning_rate * dB
 
         return dX
 
-    def get_output_shape(self) -> List[int]:
-        return self.output_shape

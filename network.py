@@ -33,6 +33,9 @@ class Network:
         test_input: np.ndarray,
         test_output: np.ndarray,
     ):
+        print(f"Initial Loss: {self.get_loss(test_input, test_output)}")
+        print(f"Initial Accuracy: {self.get_accuracy(test_input, test_output)}")
+
         for i in range(epocs):
             print(f"Epoch: {i + 1}/{epocs}")
             self.epoch(batchsize, learning_rate, train_input, train_output)
@@ -43,7 +46,7 @@ class Network:
         p = np.random.permutation(input.shape[0])
         input, expected = input[p], expected[p]
         for i in tqdm(
-            range(0, input.shape[0], batchsize), unit=" batches", ascii=" >>>>>>>>>>="
+            range(0, input.shape[0], batchsize), unit=" batches", ascii="->>>>>>>>>>="
         ):
             res = self.forward(input[i : i + batchsize])
             cost = mean_squared_err_deriv(expected[i : i + batchsize], res)
